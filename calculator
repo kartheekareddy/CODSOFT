@@ -1,0 +1,64 @@
+import tkinter as tk
+class Calculator:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Calculator")
+        self.expression = ""
+        self.create_widgets()
+    def create_widgets(self):
+        self.display = tk.Entry(self.master, font=("Arial", 24), bd=10, insertwidth=2, width=14, borderwidth=4, relief="ridge")
+        self.display.grid(row=0, column=0, columnspan=4, padx=10, pady=10)
+        buttons = ['7', '8', '9','4', '5', '6','1', '2', '3','0', '.']
+        row_val = 1
+        col_val = 0
+        for button in buttons:
+            self.create_button(button, row_val, col_val)
+            col_val += 1
+            if col_val > 2:
+                col_val = 0
+                row_val += 1
+        operations = ['+', '-', '*', '/']
+        for i, op in enumerate(operations):
+            self.create_button(op, i+1, 3)
+        equal_button = tk.Button(self.master, text='=', font=("Arial", 18), padx=20, pady=20, bd=4, relief="ridge", command=self.calculate)
+        equal_button.grid(row=5, column=2, columnspan=2, sticky="nsew")
+        clear_button = tk.Button(self.master, text='C', font=("Arial", 18), padx=20, pady=20, bd=4, relief="ridge", command=self.clear)
+        clear_button.grid(row=5, column=0, sticky="nsew")
+        backspace_button = tk.Button(self.master, text='←', font=("Arial", 18), padx=20, pady=20, bd=4, relief="ridge", command=self.backspace)
+        backspace_button.grid(row=5, column=1, sticky="nsew")
+    def create_button(self, value, row, column):
+        button = tk.Button(self.master, text=value, font=("Arial", 18), padx=20, pady=20, bd=4, relief="ridge", command=lambda: self.button_click(value))
+        button.grid(row=row, column=column, sticky="nsew")
+    def button_click(self, value):
+        self.expression += str(value)
+        self.update_display()
+    def update_display(self):
+        self.display.delete(0, tk.END)
+        self.display.insert(0, self.expression)
+    def calculate(self):
+        try:
+            result = str(eval(self.expression))
+            self.display.delete(0, tk.END)
+            self.display.insert(0, result)
+            self.expression = result
+        except Exception as e:
+            self.display.delete(0, tk.END)
+            self.display.insert(0, "Error")
+            self.expression = ""
+    def clear(self):
+        self.expression = ""
+        self.update_display()
+    def backspace(self):
+        self.expression = self.expression[:-1]
+        self.update_display()
+def main():
+    root = tk.Tk()
+    app = Calculator(root)
+    for i in range(6):
+        root.grid_rowconfigure(i, weight=1)
+    for i in range(4):
+        root.grid_columnconfigure(i, weight=1)
+    root.mainloop()
+if __name__ == "__main__":
+    main()
+    
