@@ -1,0 +1,154 @@
+import tkinter as tk
+from tkinter import ttk
+contacts = []
+def add_contact():
+    name = entry_name.get()
+    phone = entry_phone.get()
+    email = entry_email.get()
+    address = entry_address.get()
+    if name and phone:
+        if not phone.isdigit():
+            error_message.config(text="Error: Phone number should contain only digits.")
+            return
+        contacts.append({'name': name, 'phone': phone, 'email': email, 'address': address})
+        update_contact_list()
+        clear_entries()
+        error_message.config(text="")
+    else:
+        error_message.config(text="Error: Name and phone are required fields.")
+def update_contact_list():
+    contact_list.delete(*contact_list.get_children())
+    for contact in contacts:
+        contact_list.insert('', tk.END, values=(contact['name']))
+def search_contact():
+    query = entry_search.get().lower()
+    contact_list.delete(*contact_list.get_children())
+    found = False
+    for contact in contacts:
+        if query in contact['name'].lower() or query in contact['phone']:
+            contact_list.insert('', tk.END, values=(contact['name']))
+            found = True
+    if not found:
+        error_message.config(text="Error: Contact not found.")
+def clear_entries():
+    entry_name.delete(0, tk.END)
+    entry_phone.delete(0, tk.END)
+    entry_email.delete(0, tk.END)
+    entry_address.delete(0, tk.END)
+    error_message.config(text="")
+def on_contact_select(event):
+    selected_item = contact_list.selection()
+    if selected_item:
+        contact = contact_list.item(selected_item)['values']
+        if contact:
+            contact_name = contact[0]
+            for c in contacts:
+                if c['name'] == contact_name:
+                    entry_name.delete(0, tk.END)
+                    entry_name.insert(0, c['name'])
+                    entry_phone.delete(0, tk.END)
+                    entry_phone.insert(0, c['phone'])
+                    entry_email.delete(0, tk.END)
+                    entry_email.insert(0, c['email'])
+                    entry_address.delete(0, tk.END)
+                    entry_address.insert(0, c['address'])
+                    selected_contact_index.set(contacts.index(c))
+                    error_message.config(text="")
+                    break
+def update_contact():
+    index = selected_contact_index.get()
+    if index >= 0:
+        if not entry_phone.get().isdigit():
+            error_message.config(text="Error: Phone number should contain only digits.")
+            return
+        contacts[index] = {
+            'name': entry_name.get(),
+            'phone': entry_phone.get(),
+            'email': entry_email.get(),
+            'address': entry_address.get()
+        }
+        update_contact_list()
+        clear_entries()
+        error_message.config(text="")
+def delete_contact():
+    index = selected_contact_index.get()
+    if index >= 0:
+        del contacts[index]
+        update_contact_list()
+        clear_entries()
+        error_message.config(text="")
+def reset_search():
+    entry_search.delete(0, tk.END)
+    update_contact_list()
+    error_message.config(text="")
+window = tk.Tk()
+window.title("Contact Book")
+window.geometry("800x500")
+window.configure(bg="#e0f7fa")
+style = ttk.Style()
+style.theme_use("clam")
+style.configure('TLabel', font=('Helvetica', 12), background='#e0f7fa')
+style.configure('TButton', font=('Helvetica', 12), background='#00796b', foreground='#ffffff')
+style.configure('Treeview', font=('Helvetica', 10), rowheight=25)
+style.configure('Treeview.Heading', font=('Helvetica', 12, 'bold'))
+style.map('TButton', background=[('active', '#004d40')])
+left_frame = tk.Frame(window, bg="#e0f7fa")
+left_frame.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
+search_frame = tk.Frame(left_frame, bg="#e0f7fa")
+search_frame.grid(row=0, column=0, sticky="ew", pady=5)
+lbl_search = ttk.Label(search_frame, text="Search:", background='#e0f7fa')
+lbl_search.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+entry_search = ttk.Entry(search_frame, width=30)
+entry_search.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+btn_search = ttk.Button(search_frame, text="Search", command=search_contact)
+btn_search.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
+btn_reset = ttk.Button(search_frame, text="Reset", command=reset_search)
+btn_reset.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
+search_frame.columnconfigure(1, weight=1)
+contact_list = ttk.Treeview(left_frame, columns=('name',), show='headings', selectmode='browse')
+contact_list.heading('name', text='Contacts')
+contact_list.grid(row=1, column=0, sticky="nsew", pady=10)
+contact_list.bind('<<TreeviewSelect>>', on_contact_select)
+left_frame.rowconfigure(1, weight=1)
+left_frame.columnconfigure(0, weight=1)
+right_frame = tk.Frame(window, bg="#e0f7fa")
+right_frame.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
+details_frame = tk.Frame(right_frame, bg="#e0f7fa")
+details_frame.grid(row=0, column=0, pady=10, sticky="ew")
+lbl_name = ttk.Label(details_frame, text="Name:", background='#e0f7fa')
+lbl_name.grid(row=0, column=0, padx=10, pady=5, sticky=tk.E)
+entry_name = ttk.Entry(details_frame, width=30)
+entry_name.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
+lbl_phone = ttk.Label(details_frame, text="Phone:", background='#e0f7fa')
+lbl_phone.grid(row=1, column=0, padx=10, pady=5, sticky=tk.E)
+entry_phone = ttk.Entry(details_frame, width=30)
+entry_phone.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
+lbl_email = ttk.Label(details_frame, text="Email:", background='#e0f7fa')
+lbl_email.grid(row=2, column=0, padx=10, pady=5, sticky=tk.E)
+entry_email = ttk.Entry(details_frame, width=30)
+entry_email.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+lbl_address = ttk.Label(details_frame, text="Address:", background='#e0f7fa')
+lbl_address.grid(row=3, column=0, padx=10, pady=5, sticky=tk.E)
+entry_address = ttk.Entry(details_frame, width=30)
+entry_address.grid(row=3, column=1, padx=10, pady=5, sticky="ew")
+details_frame.columnconfigure(1, weight=1)
+btn_frame = tk.Frame(right_frame, bg="#e0f7fa")
+btn_frame.grid(row=1, column=0, pady=10, sticky="ew")
+btn_add = ttk.Button(btn_frame, text="Add Contact", command=add_contact)
+btn_add.grid(row=0, column=0, padx=10, pady=10)
+btn_update = ttk.Button(btn_frame, text="Update Contact", command=update_contact)
+btn_update.grid(row=0, column=1, padx=10, pady=10)
+btn_delete = ttk.Button(btn_frame, text="Delete Contact", command=delete_contact)
+btn_delete.grid(row=0, column=2, padx=10, pady=10)
+btn_frame.columnconfigure(0, weight=1)
+btn_frame.columnconfigure(1, weight=1)
+btn_frame.columnconfigure(2, weight=1)
+error_message = tk.Label(right_frame, text="", fg="red", bg="#e0f7fa")
+error_message.grid(row=2, column=0, pady=5, sticky="ew")
+right_frame.rowconfigure(2, weight=1)
+right_frame.columnconfigure(0, weight=1)
+selected_contact_index = tk.IntVar(value=-1)
+window.grid_columnconfigure(0, weight=1)
+window.grid_columnconfigure(1, weight=1)
+window.grid_rowconfigure(0, weight=1)
+window.mainloop()
